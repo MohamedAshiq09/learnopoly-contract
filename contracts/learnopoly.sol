@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -29,7 +28,8 @@ contract Learnopoly is ERC721URIStorage, Ownable {
     event BadgeClaimed(address indexed user, uint256 badgeId);
     event CertificateMinted(address indexed user, uint256 tokenId, string uri);
 
-    constructor() ERC721("LearnopolyCertificate", "LPCERT") {}
+    // Pass msg.sender to Ownable constructor
+    constructor() ERC721("LearnopolyCertificate", "LPCERT") Ownable(msg.sender) {}
 
     // Internal function to add a badge
     function _addBadge(
