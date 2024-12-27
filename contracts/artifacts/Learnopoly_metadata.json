@@ -1164,11 +1164,11 @@
 			]
 		},
 		"contracts/learnopoly.sol": {
-			"keccak256": "0xd16c6748053aa689f2e2a5ea37eb0e8afc576341a85f810b1f6336c2a02f08a6",
+			"keccak256": "0x9a257ebd9e1a3af4e48169e2080ef6d9ba58917584a63d8700482d694d22d1d1",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://3a3b5771d9fcffe1a6b442e557ae9397dcf516b9358d218c97f4af50e92fba4b",
-				"dweb:/ipfs/Qmc69BG7WxUecwpra66gF33GtEairbZ3awyV55nrKFHCBi"
+				"bzz-raw://c20a0cfbb7f26b780c92c56acc7e417631c0e11264223d2207dd2314ccddaef7",
+				"dweb:/ipfs/QmNfZ9B8QwqzC2RpHkn7A4SRBxYxeNCf8tUWNwTfWorkC4"
 			]
 		}
 	},

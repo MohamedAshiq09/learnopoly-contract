@@ -28,10 +28,9 @@ contract Learnopoly is ERC721URIStorage, Ownable {
     event BadgeClaimed(address indexed user, uint256 badgeId);
     event CertificateMinted(address indexed user, uint256 tokenId, string uri);
 
-    // Pass msg.sender to Ownable constructor
+    
     constructor() ERC721("LearnopolyCertificate", "LPCERT") Ownable(msg.sender) {}
 
-    // Internal function to add a badge
     function _addBadge(
         uint256 id,
         string memory name,
@@ -41,18 +40,15 @@ contract Learnopoly is ERC721URIStorage, Ownable {
         badges[id] = Badge(id, name, description, rewardPoints);
     }
 
-    // Admin function to add an achievement
     function addAchievement(address user, string memory name, string memory description) public onlyOwner {
         userAchievements[user].push(Achievement(name, description, block.timestamp));
         emit AchievementAdded(user, name, block.timestamp);
     }
 
-    // Admin function to add reward points
     function addRewardPoints(address user, uint256 points) public onlyOwner {
         userRewardPoints[user] += points;
     }
 
-    // User function to claim a badge
     function claimBadge(uint256 badgeId) public {
         Badge memory badge = badges[badgeId];
         require(badge.id != 0, "Badge does not exist");
@@ -62,7 +58,6 @@ contract Learnopoly is ERC721URIStorage, Ownable {
         emit BadgeClaimed(msg.sender, badgeId);
     }
 
-    // Admin function to mint a certificate NFT
     function mintCertificate(
         address user,
         string memory courseName,
@@ -81,12 +76,10 @@ contract Learnopoly is ERC721URIStorage, Ownable {
         nextTokenId++;
     }
 
-    // Function to get all achievements of a user
     function getUserAchievements(address user) public view returns (Achievement[] memory) {
         return userAchievements[user];
     }
 
-    // Function to initialize badges
     function initializeBadges() public onlyOwner {
         _addBadge(1, "Beginner", "Completed your first course!", 100);
         _addBadge(2, "Tech Enthusiast", "Earned 500 reward points!", 500);
