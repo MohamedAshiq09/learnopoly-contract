@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.19;
 
-contract LearnopolyRewards {
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract Learnopoly is ERC721URIStorage, Ownable {
+    uint256 public nextTokenId = 1;
+
     struct Achievement {
         string name;
         string description;
@@ -16,67 +22,73 @@ contract LearnopolyRewards {
     }
 
     mapping(address => Achievement[]) public userAchievements;
-
     mapping(address => uint256) public userRewardPoints;
-
     mapping(uint256 => Badge) public badges;
 
-    event AchievementAdded(
-        address indexed user,
-        string name,
-        string description,
-        uint256 timestamp
-    );
+    event AchievementAdded(address indexed user, string name, uint256 timestamp);
+    event BadgeClaimed(address indexed user, uint256 badgeId);
+    event CertificateMinted(address indexed user, uint256 tokenId, string uri);
 
-    event BadgeClaimed(
-        address indexed user,
-        uint256 badgeId,
-        string badgeName,
+    constructor() ERC721("LearnopolyCertificate", "LPCERT") {}
+
+    // Internal function to add a badge
+    function _addBadge(
+        uint256 id,
+        string memory name,
+        string memory description,
         uint256 rewardPoints
-    );
-
-    uint256 private badgeCounter; 
-
-    constructor() {
-
-        _addBadge("Beginner", "Completed your first course!", 100);
-        _addBadge("Networker", "Connected with 10 professionals!", 250);
-        _addBadge("Tech Enthusiast", "Participated in a tech quiz!", 500);
+    ) internal {
+        badges[id] = Badge(id, name, description, rewardPoints);
     }
 
-    function addAchievement(address _user, string memory _name, string memory _description) public {
-        Achievement memory newAchievement = Achievement({
-            name: _name,
-            description: _description,
-            timestamp: block.timestamp
-        });
-        userAchievements[_user].push(newAchievement);
-        emit AchievementAdded(_user, _name, _description, block.timestamp);
+    // Admin function to add an achievement
+    function addAchievement(address user, string memory name, string memory description) public onlyOwner {
+        userAchievements[user].push(Achievement(name, description, block.timestamp));
+        emit AchievementAdded(user, name, block.timestamp);
     }
 
-    function addRewardPoints(address _user, uint256 _points) public {
-        userRewardPoints[_user] += _points;
+    // Admin function to add reward points
+    function addRewardPoints(address user, uint256 points) public onlyOwner {
+        userRewardPoints[user] += points;
     }
 
-    function claimBadge(uint256 _badgeId) public {
-        Badge memory badge = badges[_badgeId];
+    // User function to claim a badge
+    function claimBadge(uint256 badgeId) public {
+        Badge memory badge = badges[badgeId];
+        require(badge.id != 0, "Badge does not exist");
         require(userRewardPoints[msg.sender] >= badge.rewardPoints, "Not enough reward points");
 
         userRewardPoints[msg.sender] -= badge.rewardPoints;
-        emit BadgeClaimed(msg.sender, badge.id, badge.name, badge.rewardPoints);
+        emit BadgeClaimed(msg.sender, badgeId);
     }
 
-    function getUserAchievements(address _user) public view returns (Achievement[] memory) {
-        return userAchievements[_user];
+    // Admin function to mint a certificate NFT
+    function mintCertificate(
+        address user,
+        string memory courseName,
+        string memory certificateURI
+    ) public onlyOwner {
+        uint256 tokenId = nextTokenId;
+        _safeMint(user, tokenId);
+        _setTokenURI(tokenId, certificateURI);
+
+        string memory achievementDescription = string(
+            abi.encodePacked("Certificate for completing the course: ", courseName)
+        );
+        addAchievement(user, "Course Completion", achievementDescription);
+
+        emit CertificateMinted(user, tokenId, certificateURI);
+        nextTokenId++;
     }
 
-    function _addBadge(string memory _name, string memory _description, uint256 _rewardPoints) internal {
-        badges[badgeCounter] = Badge({
-            id: badgeCounter,
-            name: _name,
-            description: _description,
-            rewardPoints: _rewardPoints
-        });
-        badgeCounter++;
+    // Function to get all achievements of a user
+    function getUserAchievements(address user) public view returns (Achievement[] memory) {
+        return userAchievements[user];
+    }
+
+    // Function to initialize badges
+    function initializeBadges() public onlyOwner {
+        _addBadge(1, "Beginner", "Completed your first course!", 100);
+        _addBadge(2, "Tech Enthusiast", "Earned 500 reward points!", 500);
     }
 }
